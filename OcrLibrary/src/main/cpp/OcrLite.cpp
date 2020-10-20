@@ -298,7 +298,7 @@ TextLine OcrLite::scoreToTextLine(const float *srcData, int h, int w) {
                 maxIndex = j;
             }
         }
-        if (maxIndex > 0 && (!(i > 0 && maxIndex == lastIndex))) {
+        if (maxIndex > 0 && maxIndex < keys.size() && (!(i > 0 && maxIndex == lastIndex))) {
             scores.emplace_back(maxValue);
             strRes.append(keys[maxIndex - 1]);
         }
