@@ -1,4 +1,3 @@
-#include "ncnn/net.h"
 #include "BitmapUtils.h"
 #include "OcrLite.h"
 #include "OcrUtil.h"

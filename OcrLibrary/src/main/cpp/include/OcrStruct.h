@@ -2,7 +2,6 @@
 #define __OCR_LITE_OCR_STRUCT_H__
 
 #include "opencv2/core.hpp"
-#include "ncnn/net.h"
 #include <vector>
 
 struct ScaleParam {

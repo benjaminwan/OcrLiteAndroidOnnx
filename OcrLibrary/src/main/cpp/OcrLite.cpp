@@ -92,7 +92,7 @@ char *readKeysFromAssets(AAssetManager *mgr) {
     return buffer;
 }
 
-int getModelDataFromAssets(AAssetManager *mgr, const char *modelName, void *modelData) {
+void *getModelDataFromAssets(AAssetManager *mgr, const char *modelName, int &size) {
     if (mgr == NULL) {
         LOGE(" %s", "AAssetManager==NULL");
         return NULL;
@@ -103,10 +103,11 @@ int getModelDataFromAssets(AAssetManager *mgr, const char *modelName, void *mode
         return NULL;
     }
     off_t bufferSize = AAsset_getLength(asset);
-    modelData = malloc(bufferSize + 1);
-    int numBytesRead = AAsset_read(asset, modelData, bufferSize);
+    void *modelData = malloc(bufferSize + 1);
+    size = AAsset_read(asset, modelData, bufferSize);
     AAsset_close(asset);
-    return numBytesRead;
+    LOGI("model=%s, numBytesRead=%d", modelName, size);
+    return modelData;
 }
 
 template<typename T, typename... Ts>
@@ -132,20 +133,21 @@ OcrLite::OcrLite(JNIEnv *env, jobject assetManager) {
     // ORT_ENABLE_ALL -> To Enable All possible opitmizations
     sessionOptions.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
 
-    void *dbModelData;
-    int dbModelDataLength = getModelDataFromAssets(mgr, "dbnet.onnx", dbModelData);
+    int dbModelDataLength = 0;
+    void *dbModelData = getModelDataFromAssets(mgr, "dbnet.onnx", dbModelDataLength);
     dbNet = std::make_unique<Ort::Session>(ortEnv, dbModelData, dbModelDataLength, sessionOptions);
     dbNetInputNames = getInputNames(dbNet);
     dbNetOutputNames = getOutputNames(dbNet);
 
-    void *angleModelData;
-    int angleModelDataLength = getModelDataFromAssets(mgr, "angle_net.onnx", dbModelData);
-    angleNet = makeUnique<Ort::Session>(ortEnv, angleModelData, angleModelDataLength, sessionOptions);
+    int angleModelDataLength = 0;
+    void *angleModelData = getModelDataFromAssets(mgr, "angle_net.onnx", angleModelDataLength);
+    angleNet = makeUnique<Ort::Session>(ortEnv, angleModelData, angleModelDataLength,
+                                        sessionOptions);
     angleNetInputNames = getInputNames(angleNet);
     angleNetOutputNames = getOutputNames(angleNet);
 
-    void *crnnModelData;
-    int crnnModelDataLength = getModelDataFromAssets(mgr, "crnn_lite_lstm.onnx", dbModelData);
+    int crnnModelDataLength = 0;
+    void *crnnModelData = getModelDataFromAssets(mgr, "crnn_lite_lstm.onnx", crnnModelDataLength);
     crnnNet = makeUnique<Ort::Session>(ortEnv, crnnModelData, crnnModelDataLength, sessionOptions);
     crnnNetInputNames = getInputNames(crnnNet);
     crnnNetOutputNames = getOutputNames(crnnNet);
