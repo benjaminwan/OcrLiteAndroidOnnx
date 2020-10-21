@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __OCR_UTILS_H__
+#define __OCR_UTILS_H__
 
 #include <opencv2/core.hpp>
 #include "OcrStruct.h"
@@ -36,3 +37,5 @@ int getMiniBoxes(std::vector<cv::Point> &invec,
 float boxScoreFast(cv::Mat &mapmat, std::vector<cv::Point> &_box);
 
 std::vector<float> substractMeanNormalize(cv::Mat &src, const float *meanVals, const float *normVals);
+
+#endif //__OCR_UTILS_H__

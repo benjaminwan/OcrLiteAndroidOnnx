@@ -1,6 +1,7 @@
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
 #include "OcrLite.h"
+#include "OcrUtils.h"
 #include "RRLib.h"
 #include <iosfwd>
 
@@ -123,7 +124,7 @@ OcrLite::OcrLite(JNIEnv *env, jobject assetManager) {
 
     //init models
     //session options
-    //sessionOptions.SetIntraOpNumThreads(numThread);
+    sessionOptions.SetIntraOpNumThreads(numThread);
     sessionOptions.SetInterOpNumThreads(numThread);
     // Sets graph optimization level
     // Available levels are
@@ -152,19 +153,19 @@ OcrLite::OcrLite(JNIEnv *env, jobject assetManager) {
     crnnNetInputNames = getInputNames(crnnNet);
     crnnNetOutputNames = getOutputNames(crnnNet);
 
-    //int lineCount = 0;
+    //load keys
     char *buffer = readKeysFromAssets(mgr);
-    if (buffer != NULL) {//有该文件
+    if (buffer != NULL) {
         std::istringstream inStr(buffer);
         std::string line;
         //LOGI(" txt file  found");
-        while (getline(inStr, line)) { // line中不包括每行的换行符
+        while (getline(inStr, line)) {
             keys.emplace_back(line);
             //lineCount++;
         }
         //LOGI("lineCount = %d", lineCount);
         free(buffer);
-    } else {// 没有该文件
+    } else {
         LOGE(" txt file not found");
     }
     //LOGI("初始化完成!");
@@ -287,6 +288,7 @@ Angle OcrLite::getAngle(cv::Mat &src) {
 TextLine OcrLite::scoreToTextLine(const float *srcData, int h, int w) {
     std::string strRes;
     int lastIndex = 0;
+    int keySize = keys.size();
     std::vector<float> scores;
     for (int i = 0; i < h; i++) {
         //find max score
@@ -298,7 +300,7 @@ TextLine OcrLite::scoreToTextLine(const float *srcData, int h, int w) {
                 maxIndex = j;
             }
         }
-        if (maxIndex > 0 && maxIndex < keys.size() && (!(i > 0 && maxIndex == lastIndex))) {
+        if (maxIndex > 0 && maxIndex < keySize && (!(i > 0 && maxIndex == lastIndex))) {
             scores.emplace_back(maxValue);
             strRes.append(keys[maxIndex - 1]);
         }
@@ -344,11 +346,12 @@ TextLine OcrLite::getTextLine(cv::Mat &src) {
     return scoreToTextLine((float *) score.data, rows, crnnCols);
 }
 
-OcrResult OcrLite::detect(cv::Mat &src, cv::Mat &imgBox, ScaleParam &scale,
+OcrResult OcrLite::detect(cv::Mat &src, cv::Rect &originRect, ScaleParam &scale,
                           float boxScoreThresh, float boxThresh, float minArea,
                           float angleScaleWidth, float angleScaleHeight,
                           float textScaleWidth, float textScaleHeight) {
 
+    cv::Mat textBoxPaddingImg = src.clone();
     int thickness = getThickness(src);
 
     LOGI("=====Start detect=====\n");
@@ -389,7 +392,7 @@ OcrResult OcrLite::detect(cv::Mat &src, cv::Mat &imgBox, ScaleParam &scale,
              rectText.angle);
 
         //drawTextBox
-        drawTextBox(imgBox, rectText, thickness);
+        drawTextBox(textBoxPaddingImg, rectText, thickness);
         LOGI("TextBoxPos([x: %d, y: %d], [x: %d, y: %d], [x: %d, y: %d], [x: %d, y: %d])\n",
              textBoxes[i].box[0].x, textBoxes[i].box[0].y,
              textBoxes[i].box[1].x, textBoxes[i].box[1].y,
@@ -444,8 +447,17 @@ OcrResult OcrLite::detect(cv::Mat &src, cv::Mat &imgBox, ScaleParam &scale,
         strRes.append("\n");
     }
     double endTime = getCurrentTime();
+    double fullTime = endTime - startTime;
     LOGI("=====End detect=====\n");
     LOGI("FullDetectTime(%fms)\n", endTime - startTime);
 
-    return OcrResult(textBoxes, textBoxesTime, angles, textLines, strRes);
+    //cropped to original size
+    cv::Mat textBoxImg;
+    if (originRect.x > 0 && originRect.y > 0) {
+        textBoxPaddingImg(originRect).copyTo(textBoxImg);
+    } else {
+        textBoxImg = textBoxPaddingImg;
+    }
+
+    return OcrResult(textBoxes, textBoxesTime, angles, textLines, textBoxImg, strRes, fullTime);
 }

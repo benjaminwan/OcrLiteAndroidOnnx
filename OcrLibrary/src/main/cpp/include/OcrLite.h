@@ -3,7 +3,7 @@
 
 #include "opencv2/core.hpp"
 #include "onnx/onnxruntime_cxx_api.h"
-#include "OcrUtil.h"
+#include "OcrStruct.h"
 
 using namespace std;
 
@@ -13,10 +13,12 @@ public:
 
     ~OcrLite();
 
-    OcrResult detect(cv::Mat &src, cv::Mat &imgBox, ScaleParam &scale,
-                       float boxScoreThresh, float boxThresh, float minArea,
-                       float angleScaleWidth, float angleScaleHeight,
-                       float textScaleWidth, float textScaleHeight);
+    int numThread = 4;
+
+    OcrResult detect(cv::Mat &src, cv::Rect &originRect, ScaleParam &scale,
+                     float boxScoreThresh, float boxThresh, float minArea,
+                     float angleScaleWidth, float angleScaleHeight,
+                     float textScaleWidth, float textScaleHeight);
 
 private:
     Ort::Env ortEnv = Ort::Env(ORT_LOGGING_LEVEL_ERROR, "OcrLite");
@@ -24,8 +26,6 @@ private:
     std::unique_ptr<Ort::Session> dbNet, angleNet, crnnNet;
     std::vector<const char *> dbNetInputNames, angleNetInputNames, crnnNetInputNames;
     std::vector<const char *> dbNetOutputNames, angleNetOutputNames, crnnNetOutputNames;
-
-    const int numThread = 4;
 
     const float meanValsDBNet[3] = {0.485 * 255, 0.456 * 255, 0.406 * 255};
     const float normValsDBNet[3] = {1.0 / 0.229 / 255.0, 1.0 / 0.224 / 255.0, 1.0 / 0.225 / 255.0};
@@ -52,11 +52,6 @@ private:
 
     TextLine scoreToTextLine(const float *srcData, int h, int w);
 
-    OcrResult detect(const char *path, const char *imgName,
-                     cv::Mat &src, cv::Mat &imgBox, ScaleParam &scale,
-                     float boxScoreThresh = 0.6f, float boxThresh = 0.3f, float minArea = 3.f,
-                     float angleScaleWidth = 1.3f, float angleScaleHeight = 1.3f,
-                     float textScaleWidth = 1.6f, float textScaleHeight = 1.6f);
 };
 
 
