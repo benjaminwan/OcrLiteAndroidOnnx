@@ -1,6 +1,6 @@
 #include "BitmapUtils.h"
 #include <android/bitmap.h>
-#include <OcrUtil.h>
+#include <OcrUtils.h>
 
 using namespace cv;
 
