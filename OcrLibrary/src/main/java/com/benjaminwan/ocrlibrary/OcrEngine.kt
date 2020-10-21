@@ -12,7 +12,7 @@ class OcrEngine(context: Context) {
     }
 
     var numThread: Int = 4
-    var padding: Int = 50
+    var padding: Int = 0
     var boxScoreThresh: Float = 0.6f
     var boxThresh: Float = 0.3f
     var miniArea: Float = 3f

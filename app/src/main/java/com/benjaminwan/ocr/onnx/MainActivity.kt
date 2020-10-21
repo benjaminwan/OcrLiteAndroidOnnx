@@ -32,6 +32,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, SeekBar.OnSeekBa
         resultTV.movementMethod = ScrollingMovementMethod.getInstance()
         selectBtn.setOnClickListener(this)
         detectBtn.setOnClickListener(this)
+        updatePadding(ocrEngine.padding)
         updateBoxScoreThresh((ocrEngine.boxScoreThresh * 100).toInt())
         updateBoxThresh((ocrEngine.boxThresh * 100).toInt())
         updateMinArea(ocrEngine.miniArea.toInt())
@@ -39,6 +40,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, SeekBar.OnSeekBa
         updateAngleHeight((ocrEngine.angleScaleHeight * 10).toInt())
         updateTextWidth((ocrEngine.textScaleWidth * 10).toInt())
         updateTextHeight((ocrEngine.textScaleHeight * 10).toInt())
+        paddingSeekBar.setOnSeekBarChangeListener(this)
         boxScoreThreshSeekBar.setOnSeekBarChangeListener(this)
         boxThreshSeekBar.setOnSeekBarChangeListener(this)
         minAreaSeekBar.setOnSeekBarChangeListener(this)
@@ -77,6 +79,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, SeekBar.OnSeekBa
         when (seekBar.id) {
             R.id.scaleSeekBar -> {
                 updateScale(progress)
+            }
+            R.id.paddingSeekBar -> {
+                updatePadding(progress)
             }
             R.id.boxScoreThreshSeekBar -> {
                 updateBoxScoreThresh(progress)
@@ -120,6 +125,11 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, SeekBar.OnSeekBa
         } else {
             scaleTv.text = "Size:0(${scale * 100}%)"
         }
+    }
+
+    private fun updatePadding(progress: Int) {
+        paddingTv.text = "Padding:$progress"
+        ocrEngine.padding = progress
     }
 
     private fun updateBoxScoreThresh(progress: Int) {

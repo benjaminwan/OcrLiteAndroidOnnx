@@ -29,6 +29,9 @@ Java_com_benjaminwan_ocrlibrary_OcrEngine_detect(JNIEnv *env, jobject thiz, jobj
                                                  jfloat minArea, jfloat angleScaleWidth,
                                                  jfloat angleScaleHeight,
                                                  jfloat textScaleWidth, jfloat textScaleHeight) {
+    LOGI("numThread=%d,padding=%d,reSize=%d,boxScoreThresh=%f,boxThresh=%f,minArea=%f,angleScaleWidth=%f,angleScaleHeight=%f,textScaleWidth=%f,textScaleHeight=%f",
+         numThread, padding, reSize, boxScoreThresh, boxThresh, minArea, angleScaleWidth,
+         angleScaleHeight, textScaleWidth, textScaleHeight);
     cv::Mat imgRGBA, imgBGR, imgOut;
     bitmapToMat(env, input, imgRGBA);
     cv::cvtColor(imgRGBA, imgBGR, cv::COLOR_RGBA2BGR);
