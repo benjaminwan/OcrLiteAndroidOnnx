@@ -9,16 +9,13 @@ using namespace std;
 
 class OcrLite {
 public:
-    OcrLite(JNIEnv *env, jobject assetManager);
+    OcrLite(JNIEnv *jniEnv, jobject assetManager, int numThread);
 
     ~OcrLite();
 
-    int numThread = 4;
-
     OcrResult detect(cv::Mat &src, cv::Rect &originRect, ScaleParam &scale,
                      float boxScoreThresh, float boxThresh, float minArea,
-                     float angleScaleWidth, float angleScaleHeight,
-                     float textScaleWidth, float textScaleHeight);
+                     float scaleWidth, float scaleHeight);
 
 private:
     Ort::Env ortEnv = Ort::Env(ORT_LOGGING_LEVEL_ERROR, "OcrLite");

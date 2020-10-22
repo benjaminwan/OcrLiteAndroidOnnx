@@ -1,8 +1,8 @@
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
+#include "RRLib.h"
 #include "OcrLite.h"
 #include "OcrUtils.h"
-#include "RRLib.h"
 #include <iosfwd>
 
 using namespace RRLib;
@@ -116,8 +116,8 @@ std::unique_ptr<T> makeUnique(Ts &&... params) {
     return std::unique_ptr<T>(new T(std::forward<Ts>(params)...));
 }
 
-OcrLite::OcrLite(JNIEnv *env, jobject assetManager) {
-    AAssetManager *mgr = AAssetManager_fromJava(env, assetManager);
+OcrLite::OcrLite(JNIEnv *jniEnv, jobject assetManager, int numThread) {
+    AAssetManager *mgr = AAssetManager_fromJava(jniEnv, assetManager);
     if (mgr == NULL) {
         LOGE(" %s", "AAssetManager==NULL");
     }
@@ -182,16 +182,14 @@ OcrLite::getTextBoxes(cv::Mat &src, ScaleParam &s,
                       float boxScoreThresh, float boxThresh, float minArea) {
     cv::Mat srcResize;
     cv::resize(src, srcResize, cv::Size(s.dstWidth, s.dstHeight));
-    std::vector<float> inputTensorValues = substractMeanNormalize(srcResize, meanValsDBNet,
-                                                                  normValsDBNet);
+    std::vector<float> inputTensorValues = substractMeanNormalize(srcResize, meanValsDBNet, normValsDBNet);
 
     std::array<int64_t, 4> inputShape{1, srcResize.channels(), srcResize.rows, srcResize.cols};
 
     auto memoryInfo = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
 
     Ort::Value inputTensor = Ort::Value::CreateTensor<float>(memoryInfo, inputTensorValues.data(),
-                                                             inputTensorValues.size(),
-                                                             inputShape.data(),
+                                                             inputTensorValues.size(), inputShape.data(),
                                                              inputShape.size());
     assert(inputTensor.IsTensor());
 
@@ -252,24 +250,19 @@ Angle scoreToAngle(const float *srcData, int w) {
 }
 
 Angle OcrLite::getAngle(cv::Mat &src) {
-    cv::Mat srcResize;
-    cv::resize(src, srcResize, cv::Size(angleDstWidth, angleDstHeight));
 
-    std::vector<float> inputTensorValues = substractMeanNormalize(srcResize, meanValsAngle,
-                                                                  normValsAngle);
+    std::vector<float> inputTensorValues = substractMeanNormalize(src, meanValsAngle, normValsAngle);
 
-    std::array<int64_t, 4> inputShape{1, srcResize.channels(), srcResize.rows, srcResize.cols};
+    std::array<int64_t, 4> inputShape{1, src.channels(), src.rows, src.cols};
 
     auto memoryInfo = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
 
     Ort::Value inputTensor = Ort::Value::CreateTensor<float>(memoryInfo, inputTensorValues.data(),
-                                                             inputTensorValues.size(),
-                                                             inputShape.data(),
+                                                             inputTensorValues.size(), inputShape.data(),
                                                              inputShape.size());
     assert(inputTensor.IsTensor());
 
-    auto outputTensor = angleNet->Run(Ort::RunOptions{nullptr}, angleNetInputNames.data(),
-                                      &inputTensor,
+    auto outputTensor = angleNet->Run(Ort::RunOptions{nullptr}, angleNetInputNames.data(), &inputTensor,
                                       angleNetInputNames.size(),
                                       angleNetOutputNames.data(), angleNetOutputNames.size());
 
@@ -316,21 +309,18 @@ TextLine OcrLite::getTextLine(cv::Mat &src) {
     cv::Mat srcResize;
     cv::resize(src, srcResize, cv::Size(dstWidth, crnnDstHeight));
 
-    std::vector<float> inputTensorValues = substractMeanNormalize(srcResize, meanValsCrnn,
-                                                                  normValsCrnn);
+    std::vector<float> inputTensorValues = substractMeanNormalize(srcResize, meanValsCrnn, normValsCrnn);
 
     std::array<int64_t, 4> inputShape{1, srcResize.channels(), srcResize.rows, srcResize.cols};
 
     auto memoryInfo = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
 
     Ort::Value inputTensor = Ort::Value::CreateTensor<float>(memoryInfo, inputTensorValues.data(),
-                                                             inputTensorValues.size(),
-                                                             inputShape.data(),
+                                                             inputTensorValues.size(), inputShape.data(),
                                                              inputShape.size());
     assert(inputTensor.IsTensor());
 
-    auto outputTensor = crnnNet->Run(Ort::RunOptions{nullptr}, crnnNetInputNames.data(),
-                                     &inputTensor,
+    auto outputTensor = crnnNet->Run(Ort::RunOptions{nullptr}, crnnNetInputNames.data(), &inputTensor,
                                      crnnNetInputNames.size(),
                                      crnnNetOutputNames.data(), crnnNetOutputNames.size());
 
@@ -346,10 +336,25 @@ TextLine OcrLite::getTextLine(cv::Mat &src) {
     return scoreToTextLine((float *) score.data, rows, crnnCols);
 }
 
+cv::Mat adjustAngleImg(cv::Mat &src, int dstWidth, int dstHeight) {
+    cv::Mat srcResize;
+    float scale = (float) dstHeight / (float) src.rows;
+    int angleWidth = int((float) src.cols * scale);
+    cv::resize(src, srcResize, cv::Size(angleWidth, dstHeight));
+    cv::Mat srcFit = cv::Mat(dstHeight, dstWidth, CV_8UC3, cv::Scalar(255, 255, 255));
+    if (angleWidth < dstWidth) {
+        cv::Rect rect(0, 0, srcResize.cols, srcResize.rows);
+        srcResize.copyTo(srcFit(rect));
+    } else {
+        cv::Rect rect(0, 0, dstWidth, dstHeight);
+        srcResize(rect).copyTo(srcFit);
+    }
+    return srcFit;
+}
+
 OcrResult OcrLite::detect(cv::Mat &src, cv::Rect &originRect, ScaleParam &scale,
                           float boxScoreThresh, float boxThresh, float minArea,
-                          float angleScaleWidth, float angleScaleHeight,
-                          float textScaleWidth, float textScaleHeight) {
+                          float scaleWidth, float scaleHeight) {
 
     cv::Mat textBoxPaddingImg = src.clone();
     int thickness = getThickness(src);
@@ -373,26 +378,18 @@ OcrResult OcrLite::detect(cv::Mat &src, cv::Rect &originRect, ScaleParam &scale,
     for (int i = 0; i < textBoxes.size(); ++i) {
         LOGI("-----TextBox[%d] score(%f)-----\n", i, textBoxes[i].score);
         double startTextBox = getCurrentTime();
-        cv::Mat angleImg;
-        cv::RotatedRect rectAngle = getPartRect(textBoxes[i].box, angleScaleWidth,
-                                                angleScaleHeight);
-        RRLib::getRotRectImg(rectAngle, src, angleImg);
-        LOGI("rectAngle(center.x=%f, center.y=%f, width=%f, height=%f, angle=%f)\n",
-             rectAngle.center.x, rectAngle.center.y,
-             rectAngle.size.width, rectAngle.size.height,
-             rectAngle.angle);
+        cv::Mat partImg;
+        cv::RotatedRect partRect = getPartRect(textBoxes[i].box, scaleWidth,
+                                                scaleHeight);
+        LOGI("partRect(center.x=%f, center.y=%f, width=%f, height=%f, angle=%f)\n",
+               partRect.center.x, partRect.center.y,
+               partRect.size.width, partRect.size.height,
+               partRect.angle);
 
-        cv::Mat textImg;
-        cv::RotatedRect rectText = getPartRect(textBoxes[i].box, textScaleWidth,
-                                               textScaleHeight);
-        RRLib::getRotRectImg(rectText, src, textImg);
-        LOGI("rectText(center.x=%f, center.y=%f, width=%f, height=%f, angle=%f)\n",
-             rectText.center.x, rectText.center.y,
-             rectText.size.width, rectText.size.height,
-             rectText.angle);
+        RRLib::getRotRectImg(partRect, src, partImg);
 
         //drawTextBox
-        drawTextBox(textBoxPaddingImg, rectText, thickness);
+        drawTextBox(textBoxPaddingImg, partRect, thickness);
         LOGI("TextBoxPos([x: %d, y: %d], [x: %d, y: %d], [x: %d, y: %d], [x: %d, y: %d])\n",
              textBoxes[i].box[0].x, textBoxes[i].box[0].y,
              textBoxes[i].box[1].x, textBoxes[i].box[1].y,
@@ -400,13 +397,13 @@ OcrResult OcrLite::detect(cv::Mat &src, cv::Rect &originRect, ScaleParam &scale,
              textBoxes[i].box[3].x, textBoxes[i].box[3].y);
 
         //Rotate Img
-        if (angleImg.rows > 1.5 * angleImg.cols) {
-            angleImg = matRotateClockWise90(angleImg);
-            textImg = matRotateClockWise90(textImg);
+        if (partImg.rows > 1.5 * partImg.cols) {
+            partImg = matRotateClockWise90(partImg);
         }
 
         //getAngle
         double startAngle = getCurrentTime();
+        auto angleImg = adjustAngleImg(partImg, angleDstWidth, angleDstHeight);
         Angle angle = getAngle(angleImg);
         double endAngle = getCurrentTime();
         angle.time = endAngle - startAngle;
@@ -417,13 +414,13 @@ OcrResult OcrLite::detect(cv::Mat &src, cv::Rect &originRect, ScaleParam &scale,
         angles.push_back(angle);
 
         //Rotate Img
-        if (angle.index == 0 || angle.index == 2) {
-            textImg = matRotateClockWise180(textImg);
+        if (angle.index == 0) {
+            partImg = matRotateClockWise180(partImg);
         }
 
         //getTextLine
         double startTextLine = getCurrentTime();
-        TextLine textLine = getTextLine(textImg);
+        TextLine textLine = getTextLine(partImg);
         double endTextLine = getCurrentTime();
         textLine.time = endTextLine - startTextLine;
 
@@ -449,7 +446,7 @@ OcrResult OcrLite::detect(cv::Mat &src, cv::Rect &originRect, ScaleParam &scale,
     double endTime = getCurrentTime();
     double fullTime = endTime - startTime;
     LOGI("=====End detect=====\n");
-    LOGI("FullDetectTime(%fms)\n", endTime - startTime);
+    LOGI("FullDetectTime(%fms)\n", fullTime);
 
     //cropped to original size
     cv::Mat textBoxImg;

@@ -76,4 +76,4 @@ struct OcrResult {
         lines(lines), textBoxImg(textBoxImg), strRes(strRes), fullTime(fullTime) {};
 };
 
-#endif //__OCR_LITE_OCR_STRUCT_H__
+#endif //__OCR_STRUCT_H__
