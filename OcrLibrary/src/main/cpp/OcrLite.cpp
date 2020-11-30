@@ -2,7 +2,6 @@
 #include <android/asset_manager_jni.h>
 #include "OcrLite.h"
 #include "OcrUtils.h"
-#include <iosfwd>
 
 OcrLite::OcrLite(JNIEnv *jniEnv, jobject assetManager, int numThread) {
     AAssetManager *mgr = AAssetManager_fromJava(jniEnv, assetManager);
@@ -14,8 +13,8 @@ OcrLite::OcrLite(JNIEnv *jniEnv, jobject assetManager, int numThread) {
     //session options
     sessionOptions.SetIntraOpNumThreads(numThread);
     sessionOptions.SetInterOpNumThreads(numThread);
+
     // Sets graph optimization level
-    // Available levels are
     // ORT_DISABLE_ALL -> To disable all optimizations
     // ORT_ENABLE_BASIC -> To enable basic optimizations (Such as redundant node removals)
     // ORT_ENABLE_EXTENDED -> To enable extended optimizations (Includes level 1 + more complex optimizations like node fusions)
@@ -34,25 +33,25 @@ OcrLite::OcrLite(JNIEnv *jniEnv, jobject assetManager, int numThread) {
     LOGI("初始化完成!");
 }
 
-void OcrLite::initLogger(bool isDebug) {
+/*void OcrLite::initLogger(bool isDebug) {
     isLOG = isDebug;
 }
 
 void OcrLite::Logger(const char *format, ...) {
     if (!isLOG) return;
-    char *buffer = (char *) malloc(4096);
+    char *buffer = (char *) malloc(8192);
     va_list args;
     va_start(args, format);
     vsprintf(buffer, format, args);
     va_end(args);
     if (isLOG) LOGI("%s", buffer);
     free(buffer);
-}
+}*/
 
-vector<Mat> getPartImages(Mat &src, vector<TextBox> &textBoxes) {
-    vector<Mat> partImages;
+std::vector<cv::Mat> getPartImages(cv::Mat &src, std::vector<TextBox> &textBoxes) {
+    std::vector<cv::Mat> partImages;
     for (int i = 0; i < textBoxes.size(); ++i) {
-        Mat partImg = GetRotateCropImage(src, textBoxes[i].boxPoint);
+        cv::Mat partImg = GetRotateCropImage(src, textBoxes[i].boxPoint);
         partImages.emplace_back(partImg);
     }
     return partImages;
@@ -72,12 +71,12 @@ OcrResult OcrLite::detect(cv::Mat &src, cv::Rect &originRect, ScaleParam &scale,
 
     Logger("---------- step: dbNet getTextBoxes ----------");
     double startTime = getCurrentTime();
-    std::vector<TextBox> textBoxes = dbNet.getTextBoxes(src, scale, boxScoreThresh, boxThresh,
-                                                        minArea, unClipRatio);
-    Logger("TextBoxesSize(%ud)\n", textBoxes.size());
+    std::vector<TextBox> textBoxes = dbNet.getTextBoxes(src, scale, boxScoreThresh,
+                                                        boxThresh, minArea, unClipRatio);
+    Logger("TextBoxesSize(%ld)", textBoxes.size());
     double endDbNetTime = getCurrentTime();
     double dbNetTime = endDbNetTime - startTime;
-    Logger("dbNetTime(%fms)\n", dbNetTime);
+    Logger("dbNetTime(%fms)", dbNetTime);
 
     for (int i = 0; i < textBoxes.size(); ++i) {
         Logger("TextBox[%d][score(%f),[x: %d, y: %d], [x: %d, y: %d], [x: %d, y: %d], [x: %d, y: %d]]",
@@ -93,10 +92,10 @@ OcrResult OcrLite::detect(cv::Mat &src, cv::Rect &originRect, ScaleParam &scale,
     drawTextBoxes(textBoxPaddingImg, textBoxes, thickness);
 
     //---------- getPartImages ----------
-    vector<Mat> partImages = getPartImages(src, textBoxes);
+    std::vector<cv::Mat> partImages = getPartImages(src, textBoxes);
 
     Logger("---------- step: angleNet getAngles ----------");
-    vector<Angle> angles;
+    std::vector<Angle> angles;
     angles = angleNet.getAngles(partImages, doAngle, mostAngle);
 
     //Log Angles
@@ -112,11 +111,11 @@ OcrResult OcrLite::detect(cv::Mat &src, cv::Rect &originRect, ScaleParam &scale,
     }
 
     Logger("---------- step: crnnNet getTextLine ----------");
-    vector<TextLine> textLines = crnnNet.getTextLines(partImages);
+    std::vector<TextLine> textLines = crnnNet.getTextLines(partImages);
     //Log TextLines
     for (int i = 0; i < textLines.size(); ++i) {
         Logger("textLine[%d](%s)", i, textLines[i].text.c_str());
-        ostringstream txtScores;
+        std::ostringstream txtScores;
         for (int s = 0; s < textLines[i].charScores.size(); ++s) {
             if (s == 0) {
                 txtScores << textLines[i].charScores[s];
@@ -124,15 +123,15 @@ OcrResult OcrLite::detect(cv::Mat &src, cv::Rect &originRect, ScaleParam &scale,
                 txtScores << " ," << textLines[i].charScores[s];
             }
         }
-        Logger("textScores[%d]{%s}", i, string(txtScores.str()).c_str());
+        Logger("textScores[%d]{%s}", i, std::string(txtScores.str()).c_str());
         Logger("crnnTime[%d](%fms)", i, textLines[i].time);
     }
 
-    vector<TextBlock> textBlocks;
+    std::vector<TextBlock> textBlocks;
     for (int i = 0; i < textLines.size(); ++i) {
-        TextBlock textBlock(textBoxes[i].boxPoint, textBoxes[i].score, angles[i].index, angles[i].score,
+        TextBlock textBlock{textBoxes[i].boxPoint, textBoxes[i].score, angles[i].index, angles[i].score,
                             angles[i].time, textLines[i].text, textLines[i].charScores, textLines[i].time,
-                            angles[i].time + textLines[i].time);
+                            angles[i].time + textLines[i].time};
         textBlocks.emplace_back(textBlock);
     }
 
@@ -142,19 +141,18 @@ OcrResult OcrLite::detect(cv::Mat &src, cv::Rect &originRect, ScaleParam &scale,
     Logger("FullDetectTime(%fms)", fullTime);
 
     //cropped to original size
-    Mat textBoxImg;
-
+    cv::Mat textBoxImg;
     if (originRect.x > 0 && originRect.y > 0) {
         textBoxPaddingImg(originRect).copyTo(textBoxImg);
     } else {
         textBoxImg = textBoxPaddingImg;
     }
 
-    string strRes;
+    std::string strRes;
     for (int i = 0; i < textBlocks.size(); ++i) {
         strRes.append(textBlocks[i].text);
         strRes.append("\n");
     }
 
-    return OcrResult(textBlocks, dbNetTime, textBoxImg, fullTime, strRes);
+    return OcrResult{dbNetTime, textBlocks, textBoxImg, fullTime, strRes};
 }

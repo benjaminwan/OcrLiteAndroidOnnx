@@ -8,17 +8,13 @@
 #include "AngleNet.h"
 #include "CrnnNet.h"
 
-using namespace cv;
-using namespace std;
-using namespace Ort;
-
 class OcrLite {
 public:
     OcrLite(JNIEnv *jniEnv, jobject assetManager, int numOfThread);
 
-    void initLogger(bool isDebug);
+    //void initLogger(bool isDebug);
 
-    void Logger(const char *format, ...);
+    //void Logger(const char *format, ...);
 
     OcrResult detect(cv::Mat &src, cv::Rect &originRect, ScaleParam &scale,
                      float boxScoreThresh, float boxThresh, float minArea,
@@ -26,12 +22,11 @@ public:
 
 private:
     bool isLOG = true;
+    Ort::Env ortEnv = Ort::Env(ORT_LOGGING_LEVEL_ERROR, "OcrLite");
+    Ort::SessionOptions sessionOptions;
     DbNet dbNet;
     AngleNet angleNet;
     CrnnNet crnnNet;
-
-    Env ortEnv = Env(ORT_LOGGING_LEVEL_ERROR, "OcrLite");
-    SessionOptions sessionOptions;
 
 };
 

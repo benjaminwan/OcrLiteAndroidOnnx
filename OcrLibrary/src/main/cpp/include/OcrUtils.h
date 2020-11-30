@@ -8,9 +8,6 @@
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
 
-using namespace cv;
-using namespace std;
-
 #define TAG "OcrLite"
 #define LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE,TAG,__VA_ARGS__)
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG,TAG,__VA_ARGS__)
@@ -18,19 +15,24 @@ using namespace std;
 #define LOGW(...) __android_log_print(ANDROID_LOG_WARN,TAG,__VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR,TAG,__VA_ARGS__)
 
+#define __ENABLE_CONSOLE__ true
+#define Logger(format, ...) {\
+  if(__ENABLE_CONSOLE__) LOGI(format,##__VA_ARGS__); \
+}
+
 template<typename T, typename... Ts>
-static unique_ptr<T> makeUnique(Ts &&... params) {
-    return unique_ptr<T>(new T(forward<Ts>(params)...));
+static std::unique_ptr<T> makeUnique(Ts &&... params) {
+    return std::unique_ptr<T>(new T(std::forward<Ts>(params)...));
 }
 
 template<typename T>
-static double getMean(vector<T> &input) {
+static double getMean(std::vector<T> &input) {
     auto sum = accumulate(input.begin(), input.end(), 0.0);
     return sum / input.size();
 }
 
 template<typename T>
-static double getStdev(vector<T> &input, double mean) {
+static double getStdev(std::vector<T> &input, double mean) {
     if (input.size() <= 1) return 0;
     double accum = 0.0;
     for_each(input.begin(), input.end(), [&](const double d) {
@@ -42,44 +44,46 @@ static double getStdev(vector<T> &input, double mean) {
 
 double getCurrentTime();
 
-ScaleParam getScaleParam(Mat &src, const float scale);
+ScaleParam getScaleParam(cv::Mat &src, const float scale);
 
-ScaleParam getScaleParam(Mat &src, const int targetSize);
+ScaleParam getScaleParam(cv::Mat &src, const int targetSize);
 
-RotatedRect getPartRect(vector<Point> &box, float scaleWidth, float scaleHeight);
+cv::RotatedRect getPartRect(std::vector<cv::Point> &box, float scaleWidth, float scaleHeight);
 
-int getThickness(Mat &boxImg);
+int getThickness(cv::Mat &boxImg);
 
-void drawTextBox(Mat &boxImg, RotatedRect &rect, int thickness);
+void drawTextBox(cv::Mat &boxImg, cv::RotatedRect &rect, int thickness);
 
-void drawTextBox(Mat &boxImg, const vector<Point> &box, int thickness);
+void drawTextBox(cv::Mat &boxImg, const std::vector<cv::Point> &box, int thickness);
 
-void drawTextBoxes(Mat &boxImg, vector<TextBox> &textBoxes, int thickness);
+void drawTextBoxes(cv::Mat &boxImg, std::vector<TextBox> &textBoxes, int thickness);
 
-Mat matRotateClockWise180(Mat src);
+cv::Mat matRotateClockWise180(cv::Mat src);
 
-Mat matRotateClockWise90(Mat src);
+cv::Mat matRotateClockWise90(cv::Mat src);
 
-Mat GetRotateCropImage(const Mat &src, vector<Point> box);
+cv::Mat GetRotateCropImage(const cv::Mat &src, std::vector<cv::Point> box);
 
-Mat adjustTargetImg(Mat &src, int dstWidth, int dstHeight);
+cv::Mat adjustTargetImg(cv::Mat &src, int dstWidth, int dstHeight);
 
-int getMiniBoxes(vector<Point> &inVec,
-                 vector<Point> &minBoxVec,
+int getMiniBoxes(std::vector<cv::Point> &inVec,
+                 std::vector<cv::Point> &minBoxVec,
                  float &minEdgeSize, float &allEdgeSize
 );
 
-float boxScoreFast(Mat &mapmat, vector<Point> &_box);
+float boxScoreFast(cv::Mat &mapmat, std::vector<cv::Point> &_box);
 
-void unClip(vector<Point> &minBoxVec, float allEdgeSize, vector<Point> &outVec, float unClipRatio);
+void unClip(std::vector<cv::Point> &minBoxVec, float allEdgeSize, std::vector<cv::Point> &outVec,
+            float unClipRatio);
 
-vector<int> getAngleIndexes(vector<Angle> &angles);
+std::vector<float>
+substractMeanNormalize(cv::Mat &src, const float *meanVals, const float *normVals);
 
-vector<float> substractMeanNormalize(Mat &src, const float *meanVals, const float *normVals);
+std::vector<int> getAngleIndexes(std::vector<Angle> &angles);
 
-vector<const char *> getInputNames(unique_ptr<Ort::Session> &session);
+std::vector<const char *> getInputNames(std::unique_ptr<Ort::Session> &session);
 
-vector<const char *> getOutputNames(unique_ptr<Ort::Session> &session);
+std::vector<const char *> getOutputNames(std::unique_ptr<Ort::Session> &session);
 
 void *getModelDataFromAssets(AAssetManager *mgr, const char *modelName, int &size);
 

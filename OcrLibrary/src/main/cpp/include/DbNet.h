@@ -7,23 +7,19 @@
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
 
-using namespace cv;
-using namespace std;
-using namespace Ort;
-
 class DbNet {
 public:
     ~DbNet();
 
-    bool initModel(AAssetManager *mgr, Env &ortEnv, SessionOptions &sessionOptions);
+    bool initModel(AAssetManager *mgr, Ort::Env &ortEnv, Ort::SessionOptions &sessionOptions);
 
-    vector<TextBox> getTextBoxes(Mat &src, ScaleParam &s, float boxScoreThresh,
-                                 float boxThresh, float minArea, float unClipRatio);
+    std::vector<TextBox> getTextBoxes(cv::Mat &src, ScaleParam &s, float boxScoreThresh,
+                                      float boxThresh, float minArea, float unClipRatio);
 
 private:
-    unique_ptr<Session> session;
-    vector<const char *> inputNames;
-    vector<const char *> outputNames;
+    std::unique_ptr<Ort::Session> session;
+    std::vector<const char *> inputNames;
+    std::vector<const char *> outputNames;
 
     const float meanValues[3] = {0.485 * 255, 0.456 * 255, 0.406 * 255};
     const float normValues[3] = {1.0 / 0.229 / 255.0, 1.0 / 0.224 / 255.0, 1.0 / 0.225 / 255.0};

@@ -7,23 +7,20 @@
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
 
-using namespace cv;
-using namespace std;
-using namespace Ort;
-
 class CrnnNet {
 public:
+
     ~CrnnNet();
 
-    bool initModel(AAssetManager *mgr, Env &ortEnv, SessionOptions &sessionOptions);
+    bool initModel(AAssetManager *mgr, Ort::Env &ortEnv, Ort::SessionOptions &sessionOptions);
 
-    vector<TextLine> getTextLines(vector<Mat> &partImg);
+    std::vector<TextLine> getTextLines(std::vector<cv::Mat> &partImg);
 
 private:
-    unique_ptr<Session> session;
-    vector<const char *> inputNames;
-    vector<const char *> outputNames;
-    vector<string> keys;
+    std::unique_ptr<Ort::Session> session;
+    std::vector<std::string> keys;
+    std::vector<const char *> inputNames;
+    std::vector<const char *> outputNames;
 
     const float meanValues[3] = {127.5, 127.5, 127.5};
     const float normValues[3] = {1.0 / 127.5, 1.0 / 127.5, 1.0 / 127.5};
@@ -33,7 +30,6 @@ private:
     TextLine scoreToTextLine(const float *srcData, int h, int w);
 
     TextLine getTextLine(cv::Mat &src);
-
 };
 
 
