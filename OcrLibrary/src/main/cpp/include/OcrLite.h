@@ -10,7 +10,11 @@
 
 class OcrLite {
 public:
-    OcrLite(JNIEnv *jniEnv, jobject assetManager, int numOfThread);
+    OcrLite();
+
+    ~OcrLite();
+
+    void init(JNIEnv *jniEnv, jobject assetManager, int numOfThread);
 
     //void initLogger(bool isDebug);
 
@@ -22,12 +26,9 @@ public:
 
 private:
     bool isLOG = true;
-    Ort::Env ortEnv = Ort::Env(ORT_LOGGING_LEVEL_ERROR, "OcrLite");
-    Ort::SessionOptions sessionOptions;
     DbNet dbNet;
     AngleNet angleNet;
     CrnnNet crnnNet;
-
 };
 
 

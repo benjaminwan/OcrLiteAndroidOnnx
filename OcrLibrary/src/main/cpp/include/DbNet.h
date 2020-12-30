@@ -9,15 +9,22 @@
 
 class DbNet {
 public:
+    DbNet();
+
     ~DbNet();
 
-    bool initModel(AAssetManager *mgr, Ort::Env &ortEnv, Ort::SessionOptions &sessionOptions);
+    void setNumThread(int numOfThread);
+
+    bool initModel(AAssetManager *mgr);
 
     std::vector<TextBox> getTextBoxes(cv::Mat &src, ScaleParam &s, float boxScoreThresh,
                                       float boxThresh, float minArea, float unClipRatio);
 
 private:
-    std::unique_ptr<Ort::Session> session;
+    Ort::Session *session;
+    Ort::Env *ortEnv;
+    Ort::SessionOptions *sessionOptions;
+    int numThread = 0;
     std::vector<const char *> inputNames;
     std::vector<const char *> outputNames;
 

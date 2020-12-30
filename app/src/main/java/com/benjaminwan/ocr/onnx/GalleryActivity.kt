@@ -11,6 +11,7 @@ import com.benjaminwan.ocr.onnx.app.App
 import com.benjaminwan.ocr.onnx.dialog.DebugDialog
 import com.benjaminwan.ocr.onnx.dialog.TextResultDialog
 import com.benjaminwan.ocr.onnx.utils.decodeUri
+import com.benjaminwan.ocr.onnx.utils.showToast
 import com.benjaminwan.ocrlibrary.OcrResult
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -36,6 +37,7 @@ class GalleryActivity : AppCompatActivity(), View.OnClickListener, SeekBar.OnSee
         detectBtn.setOnClickListener(this)
         resultBtn.setOnClickListener(this)
         debugBtn.setOnClickListener(this)
+        benchBtn.setOnClickListener(this)
         doAngleSw.isChecked = App.ocrEngine.doAngle
         mostAngleSw.isChecked = App.ocrEngine.mostAngle
         updatePadding(App.ocrEngine.padding)
@@ -89,6 +91,16 @@ class GalleryActivity : AppCompatActivity(), View.OnClickListener, SeekBar.OnSee
                     .setTitle("调试信息")
                     .setResult(result)
                     .show(supportFragmentManager, "DebugDialog")
+            }
+            R.id.benchBtn -> {
+                val img = selectedImg
+                if (img == null) {
+                    showToast("请先选择一张图片")
+                    return
+                }
+                val loop = 50
+                showToast("开始循环${loop}次的测试")
+                benchmark(img, loop)
             }
             else -> {
             }
@@ -188,6 +200,22 @@ class GalleryActivity : AppCompatActivity(), View.OnClickListener, SeekBar.OnSee
     private fun clearLastResult() {
         timeTV.text = ""
         ocrResult = null
+    }
+
+    private fun benchmark(img: Bitmap, loop: Int) {
+        Single.fromCallable {
+            val aveTime = App.ocrEngine.benchmark(img, loop)
+            //showToast("循环${loop}次，平均时间${aveTime}ms")
+            aveTime
+        }.subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .doOnSubscribe { showLoading() }
+            .doFinally { /*hideLoading()*/ }
+            .autoDisposable(this)
+            .subscribe { t1, t2 ->
+                timeTV.text = "循环${loop}次，平均时间${t1}ms"
+                Glide.with(this).clear(imageView)
+            }
     }
 
     private fun detect(img: Bitmap, reSize: Int) {

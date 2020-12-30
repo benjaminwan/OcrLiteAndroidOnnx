@@ -9,15 +9,22 @@
 
 class AngleNet {
 public:
+    AngleNet();
 
     ~AngleNet();
 
-    bool initModel(AAssetManager *mgr, Ort::Env &ortEnv, Ort::SessionOptions &sessionOptions);
+    void setNumThread(int numOfThread);
+
+    bool initModel(AAssetManager *mgr);
 
     std::vector<Angle> getAngles(std::vector<cv::Mat> &partImgs, bool doAngle, bool mostAngle);
 
 private:
-    std::unique_ptr<Ort::Session> session;
+    Ort::Session *session;
+    Ort::Env *ortEnv;
+    Ort::SessionOptions *sessionOptions;
+    int numThread = 0;
+
     std::vector<const char *> inputNames;
     std::vector<const char *> outputNames;
 

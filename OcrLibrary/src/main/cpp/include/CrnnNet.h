@@ -10,15 +10,21 @@
 class CrnnNet {
 public:
 
+    CrnnNet();
+
     ~CrnnNet();
 
-    bool initModel(AAssetManager *mgr, Ort::Env &ortEnv, Ort::SessionOptions &sessionOptions);
+    void setNumThread(int numOfThread);
+
+    bool initModel(AAssetManager *mgr);
 
     std::vector<TextLine> getTextLines(std::vector<cv::Mat> &partImg);
 
 private:
-    std::unique_ptr<Ort::Session> session;
-    std::vector<std::string> keys;
+    Ort::Session *session;
+    Ort::Env *ortEnv;
+    Ort::SessionOptions *sessionOptions;
+    int numThread = 0;
     std::vector<const char *> inputNames;
     std::vector<const char *> outputNames;
 
@@ -26,6 +32,8 @@ private:
     const float normValues[3] = {1.0 / 127.5, 1.0 / 127.5, 1.0 / 127.5};
     const int dstHeight = 32;
     const int crnnCols = 5531;
+
+    std::vector<std::string> keys;
 
     TextLine scoreToTextLine(const float *srcData, int h, int w);
 

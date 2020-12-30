@@ -1,14 +1,54 @@
 #include "DbNet.h"
 #include "OcrUtils.h"
 
-DbNet::~DbNet() {
-    session.release();
+DbNet::DbNet() {
+    ortEnv = new Ort::Env(ORT_LOGGING_LEVEL_ERROR, "DbNet");
+    sessionOptions = new Ort::SessionOptions();
 }
 
-bool DbNet::initModel(AAssetManager *mgr, Ort::Env &ortEnv, Ort::SessionOptions &sessionOptions) {
+DbNet::~DbNet() {
+    for (int i = 0; i < inputNames.size(); ++i) {
+        free((void *) inputNames[i]);
+    }
+    inputNames.clear();
+    for (int i = 0; i < outputNames.size(); ++i) {
+        free((void *) outputNames[i]);
+    }
+    outputNames.clear();
+    session->release();
+    delete session;
+    sessionOptions->release();
+    delete sessionOptions;
+    ortEnv->release();
+    delete ortEnv;
+}
+
+void DbNet::setNumThread(int numOfThread) {
+    numThread = numOfThread;
+    //===session options===
+    // Sets the number of threads used to parallelize the execution within nodes
+    // A value of 0 means ORT will pick a default
+    //sessionOptions.SetIntraOpNumThreads(numThread);
+    //set OMP_NUM_THREADS=16
+
+    // Sets the number of threads used to parallelize the execution of the graph (across nodes)
+    // If sequential execution is enabled this value is ignored
+    // A value of 0 means ORT will pick a default
+    sessionOptions->SetInterOpNumThreads(numThread);
+
+    // Sets graph optimization level
+    // ORT_DISABLE_ALL -> To disable all optimizations
+    // ORT_ENABLE_BASIC -> To enable basic optimizations (Such as redundant node removals)
+    // ORT_ENABLE_EXTENDED -> To enable extended optimizations (Includes level 1 + more complex optimizations like node fusions)
+    // ORT_ENABLE_ALL -> To Enable All possible opitmizations
+    sessionOptions->SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
+}
+
+bool DbNet::initModel(AAssetManager *mgr) {
     int dbModelDataLength = 0;
     void *dbModelData = getModelDataFromAssets(mgr, "dbnet.onnx", dbModelDataLength);
-    session = std::make_unique<Ort::Session>(ortEnv, dbModelData, dbModelDataLength, sessionOptions);
+    session = new Ort::Session(*ortEnv, dbModelData, dbModelDataLength, *sessionOptions);
+    free(dbModelData);
     inputNames = getInputNames(session);
     outputNames = getOutputNames(session);
     return true;

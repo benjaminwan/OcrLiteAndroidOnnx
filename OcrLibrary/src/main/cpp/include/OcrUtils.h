@@ -81,9 +81,9 @@ substractMeanNormalize(cv::Mat &src, const float *meanVals, const float *normVal
 
 std::vector<int> getAngleIndexes(std::vector<Angle> &angles);
 
-std::vector<const char *> getInputNames(std::unique_ptr<Ort::Session> &session);
+std::vector<const char *> getInputNames(Ort::Session *session);
 
-std::vector<const char *> getOutputNames(std::unique_ptr<Ort::Session> &session);
+std::vector<const char *> getOutputNames(Ort::Session *session);
 
 void *getModelDataFromAssets(AAssetManager *mgr, const char *modelName, int &size);
 

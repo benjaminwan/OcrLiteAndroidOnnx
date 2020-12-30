@@ -3,32 +3,27 @@
 #include "OcrLite.h"
 #include "OcrUtils.h"
 
-OcrLite::OcrLite(JNIEnv *jniEnv, jobject assetManager, int numThread) {
+OcrLite::OcrLite() {}
+
+OcrLite::~OcrLite() {}
+
+void OcrLite::init(JNIEnv *jniEnv, jobject assetManager, int numThread) {
     AAssetManager *mgr = AAssetManager_fromJava(jniEnv, assetManager);
     if (mgr == NULL) {
         LOGE(" %s", "AAssetManager==NULL");
     }
 
-    //init models
-    //session options
-    sessionOptions.SetIntraOpNumThreads(numThread);
-    sessionOptions.SetInterOpNumThreads(numThread);
-
-    // Sets graph optimization level
-    // ORT_DISABLE_ALL -> To disable all optimizations
-    // ORT_ENABLE_BASIC -> To enable basic optimizations (Such as redundant node removals)
-    // ORT_ENABLE_EXTENDED -> To enable extended optimizations (Includes level 1 + more complex optimizations like node fusions)
-    // ORT_ENABLE_ALL -> To Enable All possible opitmizations
-    sessionOptions.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
-
     Logger("--- Init DbNet ---\n");
-    dbNet.initModel(mgr, ortEnv, sessionOptions);
+    dbNet.setNumThread(numThread);
+    dbNet.initModel(mgr);
 
     Logger("--- Init AngleNet ---\n");
-    angleNet.initModel(mgr, ortEnv, sessionOptions);
+    angleNet.setNumThread(numThread);
+    angleNet.initModel(mgr);
 
     Logger("--- Init CrnnNet ---\n");
-    crnnNet.initModel(mgr, ortEnv, sessionOptions);
+    crnnNet.setNumThread(numThread);
+    crnnNet.initModel(mgr);
 
     LOGI("初始化完成!");
 }

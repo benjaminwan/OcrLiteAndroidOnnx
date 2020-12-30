@@ -2,8 +2,47 @@
 #include "OcrUtils.h"
 #include <numeric>
 
+CrnnNet::CrnnNet() {
+    ortEnv = new Ort::Env(ORT_LOGGING_LEVEL_ERROR, "CrnnNet");
+    sessionOptions = new Ort::SessionOptions();
+}
+
 CrnnNet::~CrnnNet() {
-    session.release();
+    for (int i = 0; i < inputNames.size(); ++i) {
+        free((void *) inputNames[i]);
+    }
+    inputNames.clear();
+    for (int i = 0; i < outputNames.size(); ++i) {
+        free((void *) outputNames[i]);
+    }
+    outputNames.clear();
+    session->release();
+    delete session;
+    sessionOptions->release();
+    delete sessionOptions;
+    ortEnv->release();
+    delete ortEnv;
+}
+
+void CrnnNet::setNumThread(int numOfThread) {
+    numThread = numOfThread;
+    //===session options===
+    // Sets the number of threads used to parallelize the execution within nodes
+    // A value of 0 means ORT will pick a default
+    //sessionOptions.SetIntraOpNumThreads(numThread);
+    //set OMP_NUM_THREADS=16
+
+    // Sets the number of threads used to parallelize the execution of the graph (across nodes)
+    // If sequential execution is enabled this value is ignored
+    // A value of 0 means ORT will pick a default
+    sessionOptions->SetInterOpNumThreads(numThread);
+
+    // Sets graph optimization level
+    // ORT_DISABLE_ALL -> To disable all optimizations
+    // ORT_ENABLE_BASIC -> To enable basic optimizations (Such as redundant node removals)
+    // ORT_ENABLE_EXTENDED -> To enable extended optimizations (Includes level 1 + more complex optimizations like node fusions)
+    // ORT_ENABLE_ALL -> To Enable All possible opitmizations
+    sessionOptions->SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
 }
 
 char *readKeysFromAssets(AAssetManager *mgr) {
@@ -32,12 +71,12 @@ char *readKeysFromAssets(AAssetManager *mgr) {
     return buffer;
 }
 
-bool CrnnNet::initModel(AAssetManager *mgr, Ort::Env &ortEnv, Ort::SessionOptions &sessionOptions) {
+bool CrnnNet::initModel(AAssetManager *mgr) {
     int dbModelDataLength = 0;
     void *dbModelData = getModelDataFromAssets(mgr, "crnn_lite_lstm.onnx", dbModelDataLength);
-    session = std::make_unique<Ort::Session>(ortEnv, dbModelData, dbModelDataLength,
-                                             sessionOptions);
-
+    session = new Ort::Session(*ortEnv, dbModelData, dbModelDataLength,
+                               *sessionOptions);
+    free(dbModelData);
     inputNames = getInputNames(session);
     outputNames = getOutputNames(session);
 
@@ -139,7 +178,7 @@ std::vector<TextLine> CrnnNet::getTextLines(std::vector<cv::Mat> &partImg) {
     int size = partImg.size();
     std::vector<TextLine> textLines(size);
 #ifdef __OPENMP__
-#pragma omp parallel for
+#pragma omp parallel for num_threads(numThread)
 #endif
     for (int i = 0; i < size; ++i) {
         //getTextLine
