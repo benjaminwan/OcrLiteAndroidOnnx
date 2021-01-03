@@ -13,7 +13,7 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 
 JNIEXPORT void JNI_OnUnload(JavaVM *vm, void *reserved) {
     LOGI("Goodbye OcrLite!");
-    free(ocrLite);
+    delete ocrLite;
 }
 
 extern "C" JNIEXPORT jboolean JNICALL
