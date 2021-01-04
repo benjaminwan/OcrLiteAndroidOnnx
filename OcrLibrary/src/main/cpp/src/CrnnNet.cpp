@@ -2,18 +2,10 @@
 #include "OcrUtils.h"
 #include <numeric>
 
-CrnnNet::CrnnNet() {
-    ortEnv = new Ort::Env(ORT_LOGGING_LEVEL_ERROR, "CrnnNet");
-    sessionOptions = new Ort::SessionOptions();
-}
+CrnnNet::CrnnNet() {}
 
 CrnnNet::~CrnnNet() {
-    session->release();
     delete session;
-    sessionOptions->release();
-    delete sessionOptions;
-    ortEnv->release();
-    delete ortEnv;
 }
 
 void CrnnNet::setNumThread(int numOfThread) {
@@ -27,14 +19,14 @@ void CrnnNet::setNumThread(int numOfThread) {
     // Sets the number of threads used to parallelize the execution of the graph (across nodes)
     // If sequential execution is enabled this value is ignored
     // A value of 0 means ORT will pick a default
-    sessionOptions->SetInterOpNumThreads(numThread);
+    sessionOptions.SetInterOpNumThreads(numThread);
 
     // Sets graph optimization level
     // ORT_DISABLE_ALL -> To disable all optimizations
     // ORT_ENABLE_BASIC -> To enable basic optimizations (Such as redundant node removals)
     // ORT_ENABLE_EXTENDED -> To enable extended optimizations (Includes level 1 + more complex optimizations like node fusions)
     // ORT_ENABLE_ALL -> To Enable All possible opitmizations
-    sessionOptions->SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
+    sessionOptions.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
 }
 
 char *readKeysFromAssets(AAssetManager *mgr) {
@@ -66,11 +58,11 @@ char *readKeysFromAssets(AAssetManager *mgr) {
 bool CrnnNet::initModel(AAssetManager *mgr) {
     int dbModelDataLength = 0;
     void *dbModelData = getModelDataFromAssets(mgr, "crnn_lite_lstm.onnx", dbModelDataLength);
-    session = new Ort::Session(*ortEnv, dbModelData, dbModelDataLength,
-                               *sessionOptions);
+    session = new Ort::Session(ortEnv, dbModelData, dbModelDataLength,
+                               sessionOptions);
     free(dbModelData);
-    inputNames = getInputNames(session);
-    outputNames = getOutputNames(session);
+    //inputNames = getInputNames(session);
+    //outputNames = getOutputNames(session);
 
     //load keys
     char *buffer = readKeysFromAssets(mgr);
@@ -142,7 +134,7 @@ TextLine CrnnNet::getTextLine(cv::Mat &src) {
 
     std::array<int64_t, 4> inputShape{1, srcResize.channels(), srcResize.rows, srcResize.cols};
 
-    auto memoryInfo = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
+    auto memoryInfo = Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU);
 
 
     Ort::Value inputTensor = Ort::Value::CreateTensor<float>(memoryInfo, inputTensorValues.data(),
@@ -150,9 +142,8 @@ TextLine CrnnNet::getTextLine(cv::Mat &src) {
                                                              inputShape.size());
     assert(inputTensor.IsTensor());
 
-    auto outputTensor = session->Run(Ort::RunOptions{nullptr}, inputNames.data(), &inputTensor,
-                                     inputNames.size(),
-                                     outputNames.data(), outputNames.size());
+    auto outputTensor = session->Run(Ort::RunOptions{nullptr}, inputNames, &inputTensor,
+                                     1, outputNames, 1);
 
     assert(outputTensor.size() == 1 && outputTensor.front().IsTensor());
 
