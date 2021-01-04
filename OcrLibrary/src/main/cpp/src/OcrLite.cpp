@@ -124,7 +124,13 @@ OcrResult OcrLite::detect(cv::Mat &src, cv::Rect &originRect, ScaleParam &scale,
 
     std::vector<TextBlock> textBlocks;
     for (int i = 0; i < textLines.size(); ++i) {
-        TextBlock textBlock{textBoxes[i].boxPoint, textBoxes[i].score, angles[i].index, angles[i].score,
+        std::vector<cv::Point> boxPoint = std::vector<cv::Point>(4);
+        int padding = originRect.x;//padding conversion
+        boxPoint[0] = cv::Point(textBoxes[i].boxPoint[0].x - padding, textBoxes[i].boxPoint[0].y - padding);
+        boxPoint[1] = cv::Point(textBoxes[i].boxPoint[1].x - padding, textBoxes[i].boxPoint[1].y - padding);
+        boxPoint[2] = cv::Point(textBoxes[i].boxPoint[2].x - padding, textBoxes[i].boxPoint[2].y - padding);
+        boxPoint[3] = cv::Point(textBoxes[i].boxPoint[3].x - padding, textBoxes[i].boxPoint[3].y - padding);
+        TextBlock textBlock{boxPoint, textBoxes[i].score, angles[i].index, angles[i].score,
                             angles[i].time, textLines[i].text, textLines[i].charScores, textLines[i].time,
                             angles[i].time + textLines[i].time};
         textBlocks.emplace_back(textBlock);
