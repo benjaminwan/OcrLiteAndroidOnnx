@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.4.1)
 
 option(OCR_LITE_OPENMP "OcrLite Enable OpenMP" ON)
+set(OCR_LITE_OPENMP ON)
 
 #ONNX
 set(ONNX_DIR "${CMAKE_SOURCE_DIR}/../onnx")
