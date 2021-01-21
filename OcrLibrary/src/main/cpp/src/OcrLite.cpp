@@ -53,7 +53,7 @@ std::vector<cv::Mat> getPartImages(cv::Mat &src, std::vector<TextBox> &textBoxes
 }
 
 OcrResult OcrLite::detect(cv::Mat &src, cv::Rect &originRect, ScaleParam &scale,
-                          float boxScoreThresh, float boxThresh, float minArea,
+                          float boxScoreThresh, float boxThresh,
                           float unClipRatio, bool doAngle, bool mostAngle) {
 
     cv::Mat textBoxPaddingImg = src.clone();
@@ -67,7 +67,7 @@ OcrResult OcrLite::detect(cv::Mat &src, cv::Rect &originRect, ScaleParam &scale,
     Logger("---------- step: dbNet getTextBoxes ----------");
     double startTime = getCurrentTime();
     std::vector<TextBox> textBoxes = dbNet.getTextBoxes(src, scale, boxScoreThresh,
-                                                        boxThresh, minArea, unClipRatio);
+                                                        boxThresh, unClipRatio);
     Logger("TextBoxesSize(%ld)", textBoxes.size());
     double endDbNetTime = getCurrentTime();
     double dbNetTime = endDbNetTime - startTime;
@@ -95,7 +95,8 @@ OcrResult OcrLite::detect(cv::Mat &src, cv::Rect &originRect, ScaleParam &scale,
 
     //Log Angles
     for (int i = 0; i < angles.size(); ++i) {
-        Logger("angle[%d][index(%d), score(%f), time(%fms)]", i, angles[i].index, angles[i].score, angles[i].time);
+        Logger("angle[%d][index(%d), score(%f), time(%fms)]", i, angles[i].index, angles[i].score,
+               angles[i].time);
     }
 
     //Rotate partImgs
@@ -126,12 +127,17 @@ OcrResult OcrLite::detect(cv::Mat &src, cv::Rect &originRect, ScaleParam &scale,
     for (int i = 0; i < textLines.size(); ++i) {
         std::vector<cv::Point> boxPoint = std::vector<cv::Point>(4);
         int padding = originRect.x;//padding conversion
-        boxPoint[0] = cv::Point(textBoxes[i].boxPoint[0].x - padding, textBoxes[i].boxPoint[0].y - padding);
-        boxPoint[1] = cv::Point(textBoxes[i].boxPoint[1].x - padding, textBoxes[i].boxPoint[1].y - padding);
-        boxPoint[2] = cv::Point(textBoxes[i].boxPoint[2].x - padding, textBoxes[i].boxPoint[2].y - padding);
-        boxPoint[3] = cv::Point(textBoxes[i].boxPoint[3].x - padding, textBoxes[i].boxPoint[3].y - padding);
+        boxPoint[0] = cv::Point(textBoxes[i].boxPoint[0].x - padding,
+                                textBoxes[i].boxPoint[0].y - padding);
+        boxPoint[1] = cv::Point(textBoxes[i].boxPoint[1].x - padding,
+                                textBoxes[i].boxPoint[1].y - padding);
+        boxPoint[2] = cv::Point(textBoxes[i].boxPoint[2].x - padding,
+                                textBoxes[i].boxPoint[2].y - padding);
+        boxPoint[3] = cv::Point(textBoxes[i].boxPoint[3].x - padding,
+                                textBoxes[i].boxPoint[3].y - padding);
         TextBlock textBlock{boxPoint, textBoxes[i].score, angles[i].index, angles[i].score,
-                            angles[i].time, textLines[i].text, textLines[i].charScores, textLines[i].time,
+                            angles[i].time, textLines[i].text, textLines[i].charScores,
+                            textLines[i].time,
                             angles[i].time + textLines[i].time};
         textBlocks.emplace_back(textBlock);
     }

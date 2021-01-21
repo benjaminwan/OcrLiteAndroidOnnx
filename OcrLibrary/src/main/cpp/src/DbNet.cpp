@@ -39,18 +39,21 @@ bool DbNet::initModel(AAssetManager *mgr) {
 }
 
 std::vector<TextBox>
-DbNet::getTextBoxes(cv::Mat &src, ScaleParam &s,
-                    float boxScoreThresh, float boxThresh, float minArea, float unClipRatio) {
+DbNet::getTextBoxes(cv::Mat &src, ScaleParam &s, float boxScoreThresh, float boxThresh,
+                    float unClipRatio) {
+    float minArea = 3.0f;
     cv::Mat srcResize;
     resize(src, srcResize, cv::Size(s.dstWidth, s.dstHeight));
-    std::vector<float> inputTensorValues = substractMeanNormalize(srcResize, meanValues, normValues);
+    std::vector<float> inputTensorValues = substractMeanNormalize(srcResize, meanValues,
+                                                                  normValues);
 
     std::array<int64_t, 4> inputShape{1, srcResize.channels(), srcResize.rows, srcResize.cols};
 
     auto memoryInfo = Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU);
 
     Ort::Value inputTensor = Ort::Value::CreateTensor<float>(memoryInfo, inputTensorValues.data(),
-                                                             inputTensorValues.size(), inputShape.data(),
+                                                             inputTensorValues.size(),
+                                                             inputShape.data(),
                                                              inputShape.size());
     assert(inputTensor.IsTensor());
 
