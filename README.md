@@ -21,7 +21,7 @@ onnxruntime框架[https://github.com/microsoft/onnxruntime](https://github.com/m
 6. onnxruntime动态库为自己编译的1.6.0版
 
 ### 编译说明
-1.  AndroidStudio 4.1或以上
+1.  AndroidStudio 4.1.2或以上
 2.  NDK
 3.  cmake 3.4.1或以上
 4.  [模型下载](https://github.com/ouyanghuiyu/chineseocr_lite/tree/onnx/models)
