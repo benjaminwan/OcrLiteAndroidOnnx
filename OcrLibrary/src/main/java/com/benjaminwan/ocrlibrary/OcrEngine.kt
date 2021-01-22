@@ -22,17 +22,18 @@ class OcrEngine(context: Context) {
     var doAngle: Boolean = true
     var mostAngle: Boolean = true
 
-    fun detect(input: Bitmap, output: Bitmap, reSize: Int) = detect(
-            input, output, padding, reSize,
+    fun detect(input: Bitmap, output: Bitmap, maxSideLen: Int) =
+        detect(
+            input, output, padding, maxSideLen,
             boxScoreThresh, boxThresh,
             unClipRatio, doAngle, mostAngle
-    )
+        )
 
     external fun init(assetManager: AssetManager, numThread: Int): Boolean
     external fun detect(
-            input: Bitmap, output: Bitmap, padding: Int, reSize: Int,
-            boxScoreThresh: Float, boxThresh: Float,
-            unClipRatio: Float, doAngle: Boolean, mostAngle: Boolean
+        input: Bitmap, output: Bitmap, padding: Int, maxSideLen: Int,
+        boxScoreThresh: Float, boxThresh: Float,
+        unClipRatio: Float, doAngle: Boolean, mostAngle: Boolean
     ): OcrResult
 
     external fun benchmark(input: Bitmap, loop: Int): Double
