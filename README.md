@@ -1,7 +1,12 @@
-# ChOcrLiteAndroidOnnx
+# OcrLiteAndroidOnnx
+
+### Project下载
+* 有整合好源码和依赖库的完整工程项目，文件比较大，可到Q群共享内下载，找以Project开头的压缩包文件
+* 如果想自己折腾，则请继续阅读本说明
 
 ### Demo APK下载
-[Gitee下载](https://gitee.com/benjaminwan/ocr-lite-android-onnx/releases)
+编译好的demo文件可以到Q群共享内下载
+或者[Gitee下载](https://gitee.com/benjaminwan/ocr-lite-android-onnx/releases)
 
 ### 介绍
 Chineseocr Lite Android Onnx Demo，超轻量级中文OCR Android Demo，支持onnx推理 (DBNet+AngleNet+CRNN)
