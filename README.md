@@ -61,7 +61,7 @@ ChOcrLiteAndroidOnnx/OcrLibrary/src/main/onnx
 7. 编译好的安装大约34MB
 
 ### 输入参数说明
-请参考[OcrLiteOnnx项目](https://github.com/ouyanghuiyu/chineseocr_lite/tree/onnx/pc_projects/OcrLiteOnnx)
+请参考[OcrLiteOnnx项目](https://github.com/ouyanghuiyu/chineseocr_lite/tree/onnx/cpp_projects/OcrLiteOnnx)
 
 ### 删除缓存，重新编译
 删除项目根目录下的如下文件夹
