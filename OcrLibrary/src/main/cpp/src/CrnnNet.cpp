@@ -160,9 +160,6 @@ TextLine CrnnNet::getTextLine(cv::Mat &src) {
 std::vector<TextLine> CrnnNet::getTextLines(std::vector<cv::Mat> &partImg) {
     int size = partImg.size();
     std::vector<TextLine> textLines(size);
-#ifdef __OPENMP__
-#pragma omp parallel for num_threads(numThread)
-#endif
     for (int i = 0; i < size; ++i) {
         //getTextLine
         double startCrnnTime = getCurrentTime();
