@@ -52,7 +52,7 @@ Java_com_benjaminwan_ocrlibrary_OcrEngine_detect(JNIEnv *env, jobject thiz, jobj
     } else {
         resize = maxSideLen;
     }
-    resize += 2*padding;
+    resize += 2 * padding;
     cv::Rect paddingRect(padding, padding, imgRGB.cols, imgRGB.rows);
     cv::Mat paddingSrc = makePadding(imgRGB, padding);
     //按比例缩小图像，减少文字分割时间
