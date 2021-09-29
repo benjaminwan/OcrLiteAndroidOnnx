@@ -13,12 +13,12 @@ android {
         }
     }
 
-    compileSdkVersion 30
+    compileSdkVersion 31
 
     defaultConfig {
         applicationId "com.benjaminwan.ocr.onnx"
         minSdkVersion 21
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionCode 18
         versionName "1.5.3.20210123"
         signingConfig signingConfigs.ocr
