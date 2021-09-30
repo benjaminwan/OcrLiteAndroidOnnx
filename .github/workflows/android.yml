@@ -74,7 +74,7 @@ jobs:
         id: apk-path
         run: |
           path=$(find app/build/outputs/apk/release -name '*.apk' -type f | head -1)
-          echo "::set-output name=path1::$path"
+          echo "::set-output name=path::$path"
 
       # 获取apk版本号
       # https://github.com/marketplace/actions/apk-info-action
