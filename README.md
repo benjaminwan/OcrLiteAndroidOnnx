@@ -6,7 +6,7 @@
 <details open>
     <summary>目录</summary>
 
-- [OcrLiteAndroidNcnn](#OcrLiteAndroidNcnn)
+- [OcrLiteAndroidOnnx](#OcrLiteAndroidOnnx)
     - [联系方式](#联系方式)
     - [项目完整源码](#项目完整源码)
     - [APK下载](#APK下载)
