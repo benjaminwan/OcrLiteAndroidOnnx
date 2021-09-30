@@ -79,7 +79,7 @@ onnxruntime框架[https://github.com/microsoft/onnxruntime](https://github.com/m
 1. AndroidStudio 2020.3.1或以上；
 2. NDK下载，在SDK Tools中下载，版本选最新版；
 3. cmake 3.4.1或以上，最好是3.18.1，在SDK Tools中下载；
-4.  [模型下载](https://github.com/ouyanghuiyu/chineseocr_lite/tree/onnx/models)
+4. [模型下载](https://github.com/ouyanghuiyu/chineseocr_lite/tree/onnx/models)
    目录结构为
 
 ```
@@ -89,8 +89,7 @@ OcrLiteAndroidOnnx/OcrLibrary/src/main/assets
 ├── dbnet.onnx
 └── keys.txt
 ```
-5.
-下载opencv-mobile-3.4.15-android.7z，[下载地址](https://gitee.com/benjaminwan/ocr-lite-android-ncnn/attach_files/843219/download/opencv-mobile-3.4.15-android.7z)
+5. 下载opencv-mobile-3.4.15-android.7z，[下载地址](https://gitee.com/benjaminwan/ocr-lite-android-ncnn/attach_files/843219/download/opencv-mobile-3.4.15-android.7z)
 解压后目录结构为
 
 ```
