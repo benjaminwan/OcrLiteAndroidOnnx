@@ -121,7 +121,7 @@ OcrLiteAndroidOnnx/OcrLibrary/src/main/onnx
     └── libonnxruntime.so
 ```
 
-7. 编译好的安装大约3xMB
+7. 编译好的apk大约3xMB
 
 
 ### 编译Release包
