@@ -37,7 +37,7 @@
 
 ## 项目完整源码
 
-* 整合好源码和依赖库的完整工程项目，文件比较大，可到Q群共享内下载，以Project开头的压缩包文件为源码工程，例：Project_OcrLiteAndroidOnnx-版本号.7z
+* 整合好源码和依赖库的完整工程项目，可到Q群共享内下载或Release下载，找以Project开头的压缩包文件为源码工程，例：Project_OcrLiteAndroidOnnx-版本号.7z
 * 如果想自己折腾，则请继续阅读本说明
 
 ## APK下载
@@ -100,7 +100,10 @@ OcrLiteAndroidOnnx/OcrLibrary/src/main/assets
 ├── dbnet.onnx
 └── keys.txt
 ```
-5. 下载opencv-mobile-3.4.15-android.7z，[下载地址](https://gitee.com/benjaminwan/ocr-lite-android-ncnn/attach_files/843219/download/opencv-mobile-3.4.15-android.7z)
+
+5.
+
+下载opencv-mobile-3.4.15-android.7z，[下载地址](https://gitee.com/benjaminwan/ocr-lite-android-ncnn/attach_files/843219/download/opencv-mobile-3.4.15-android.7z)
 解压后目录结构为
 
 ```
@@ -113,6 +116,7 @@ OcrLiteAndroidNcnn/OcrLibrary/src/sdk
 6. 下载onnxruntime-1.9.0-android.7z，[下载地址](https://gitee.com/benjaminwan/ocr-lite-android-onnx/releases/v1.0.0.20201022)
 
 * 解压后目录结构为
+
 ```
 OcrLiteAndroidOnnx/OcrLibrary/src/main/onnx
 ├── ONNXConfig.cmake
@@ -128,7 +132,6 @@ OcrLiteAndroidOnnx/OcrLibrary/src/main/onnx
 ```
 
 7. 编译好的apk大约3xMB
-
 
 ### 编译Release包
 
