@@ -3,7 +3,7 @@
 
 #include <opencv2/core.hpp>
 #include "OcrStruct.h"
-#include "onnx/onnxruntime_cxx_api.h"
+#include "onnxruntime/core/session/onnxruntime_cxx_api.h"
 #include <android/log.h>
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>

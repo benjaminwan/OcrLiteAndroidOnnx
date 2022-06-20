@@ -42,11 +42,11 @@ jobs:
           7z x opencv-mobile-3.4.15-android.7z -aoa
           mv opencv-mobile-3.4.15-android/sdk OcrLibrary/src
 
-      # 下载onnxruntime-1.9.0-android.7z并解压到OcrLibrary/src/main/onnx
-      - name: Download onnxruntime-1.9.0-android.7z
+      # 下载onnxruntime-1.11.1-android.7z并解压到OcrLibrary/src/main/onnx
+      - name: Download onnxruntime-1.11.1-android.7z
         run: |
-          wget https://github.com/benjaminwan/OcrLiteAndroidOnnx/releases/download/v1.0.0.20201022/onnxruntime-1.9.0-android.7z -O onnxruntime-1.9.0-android.7z
-          7z x onnxruntime-1.9.0-android.7z -aoa
+          wget https://github.com/benjaminwan/OcrLiteAndroidOnnx/releases/download/v1.0.0.20201022/onnxruntime-1.11.1-android.7z -O onnxruntime-1.11.1-android.7z
+          7z x onnxruntime-1.11.1-android.7z -aoa
           mv onnx OcrLibrary/src/main
 
       # Assemble Release apk

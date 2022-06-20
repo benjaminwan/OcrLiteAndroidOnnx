@@ -2,7 +2,7 @@
 #define __OCR_ANGLENET_H__
 
 #include "OcrStruct.h"
-#include "onnx/onnxruntime_cxx_api.h"
+#include "onnxruntime/core/session/onnxruntime_cxx_api.h"
 #include <opencv2/core.hpp>
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>

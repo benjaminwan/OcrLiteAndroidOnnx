@@ -2,7 +2,7 @@
 #define __OCR_DBNET_H__
 
 #include "OcrStruct.h"
-#include "onnx/onnxruntime_cxx_api.h"
+#include "onnxruntime/core/session/onnxruntime_cxx_api.h"
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include <android/asset_manager.h>
