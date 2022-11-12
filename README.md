@@ -56,6 +56,8 @@ Chineseocr Lite Android Onnx Demo，超轻量级中文OCR Android Demo，支持o
 
 onnxruntime框架[https://github.com/microsoft/onnxruntime](https://github.com/microsoft/onnxruntime)
 
+相似项目：https://github.com/RapidAI/RapidOcrAndroidOnnxCompose
+
 ## 总体说明
 
 1. 封装为独立的Library，可以编译为aar，作为模块来调用；
