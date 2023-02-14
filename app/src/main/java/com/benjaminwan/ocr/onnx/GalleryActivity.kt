@@ -5,14 +5,11 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
-import android.widget.ImageView
 import android.widget.SeekBar
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.SwitchCompat
 import androidx.lifecycle.lifecycleScope
 import com.benjaminwan.ocr.onnx.app.App
+import com.benjaminwan.ocr.onnx.databinding.ActivityGalleryBinding
 import com.benjaminwan.ocr.onnx.dialog.DebugDialog
 import com.benjaminwan.ocr.onnx.dialog.TextResultDialog
 import com.benjaminwan.ocr.onnx.utils.decodeUri
@@ -28,73 +25,33 @@ import kotlin.math.max
 
 class GalleryActivity : AppCompatActivity(), View.OnClickListener, SeekBar.OnSeekBarChangeListener {
 
+    private lateinit var binding: ActivityGalleryBinding
+
     private var selectedImg: Bitmap? = null
     private var ocrResult: OcrResult? = null
 
-    private lateinit var selectBtn: Button
-    private lateinit var detectBtn: Button
-    private lateinit var resultBtn: Button
-    private lateinit var debugBtn: Button
-    private lateinit var benchBtn: Button
-    private lateinit var doAngleSw: SwitchCompat
-    private lateinit var mostAngleSw: SwitchCompat
-    private lateinit var paddingSeekBar: SeekBar
-    private lateinit var boxScoreThreshSeekBar: SeekBar
-    private lateinit var boxThreshSeekBar: SeekBar
-    private lateinit var maxSideLenSeekBar: SeekBar
-    private lateinit var scaleUnClipRatioSeekBar: SeekBar
-    private lateinit var maxSideLenTv: TextView
-    private lateinit var paddingTv: TextView
-    private lateinit var boxScoreThreshTv: TextView
-    private lateinit var boxThreshTv: TextView
-    private lateinit var unClipRatioTv: TextView
-    private lateinit var timeTV: TextView
-    private lateinit var imageView: ImageView
-
-    private fun findViews() {
-        selectBtn = findViewById(R.id.selectBtn)
-        detectBtn = findViewById(R.id.detectBtn)
-        resultBtn = findViewById(R.id.resultBtn)
-        debugBtn = findViewById(R.id.debugBtn)
-        benchBtn = findViewById(R.id.benchBtn)
-        doAngleSw = findViewById(R.id.doAngleSw)
-        mostAngleSw = findViewById(R.id.mostAngleSw)
-        paddingSeekBar = findViewById(R.id.paddingSeekBar)
-        boxScoreThreshSeekBar = findViewById(R.id.boxScoreThreshSeekBar)
-        boxThreshSeekBar = findViewById(R.id.boxThreshSeekBar)
-        maxSideLenSeekBar = findViewById(R.id.maxSideLenSeekBar)
-        scaleUnClipRatioSeekBar = findViewById(R.id.scaleUnClipRatioSeekBar)
-        maxSideLenTv = findViewById(R.id.maxSideLenTv)
-        paddingTv = findViewById(R.id.paddingTv)
-        boxScoreThreshTv = findViewById(R.id.boxScoreThreshTv)
-        boxThreshTv = findViewById(R.id.boxThreshTv)
-        unClipRatioTv = findViewById(R.id.unClipRatioTv)
-        timeTV = findViewById(R.id.timeTV)
-        imageView = findViewById(R.id.imageView)
-    }
-
     private fun initViews() {
-        selectBtn.setOnClickListener(this)
-        detectBtn.setOnClickListener(this)
-        resultBtn.setOnClickListener(this)
-        debugBtn.setOnClickListener(this)
-        benchBtn.setOnClickListener(this)
-        doAngleSw.isChecked = App.ocrEngine.doAngle
-        mostAngleSw.isChecked = App.ocrEngine.mostAngle
+        binding.selectBtn.setOnClickListener(this)
+        binding.detectBtn.setOnClickListener(this)
+        binding.resultBtn.setOnClickListener(this)
+        binding.debugBtn.setOnClickListener(this)
+        binding.benchBtn.setOnClickListener(this)
+        binding.doAngleSw.isChecked = App.ocrEngine.doAngle
+        binding.mostAngleSw.isChecked = App.ocrEngine.mostAngle
         updatePadding(App.ocrEngine.padding)
         updateBoxScoreThresh((App.ocrEngine.boxScoreThresh * 100).toInt())
         updateBoxThresh((App.ocrEngine.boxThresh * 100).toInt())
         updateUnClipRatio((App.ocrEngine.unClipRatio * 10).toInt())
-        paddingSeekBar.setOnSeekBarChangeListener(this)
-        boxScoreThreshSeekBar.setOnSeekBarChangeListener(this)
-        boxThreshSeekBar.setOnSeekBarChangeListener(this)
-        maxSideLenSeekBar.setOnSeekBarChangeListener(this)
-        scaleUnClipRatioSeekBar.setOnSeekBarChangeListener(this)
-        doAngleSw.setOnCheckedChangeListener { _, isChecked ->
+        binding.paddingSeekBar.setOnSeekBarChangeListener(this)
+        binding.boxScoreThreshSeekBar.setOnSeekBarChangeListener(this)
+        binding.boxThreshSeekBar.setOnSeekBarChangeListener(this)
+        binding.maxSideLenSeekBar.setOnSeekBarChangeListener(this)
+        binding.scaleUnClipRatioSeekBar.setOnSeekBarChangeListener(this)
+        binding.doAngleSw.setOnCheckedChangeListener { _, isChecked ->
             App.ocrEngine.doAngle = isChecked
-            mostAngleSw.isEnabled = isChecked
+            binding.mostAngleSw.isEnabled = isChecked
         }
-        mostAngleSw.setOnCheckedChangeListener { _, isChecked ->
+        binding.mostAngleSw.setOnCheckedChangeListener { _, isChecked ->
             App.ocrEngine.mostAngle = isChecked
         }
     }
@@ -102,8 +59,8 @@ class GalleryActivity : AppCompatActivity(), View.OnClickListener, SeekBar.OnSee
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         App.ocrEngine.doAngle = true//相册识别时，默认启用文字方向检测
-        setContentView(R.layout.activity_gallery)
-        findViews()
+        binding = ActivityGalleryBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         initViews()
     }
 
@@ -120,7 +77,7 @@ class GalleryActivity : AppCompatActivity(), View.OnClickListener, SeekBar.OnSee
             }
             R.id.detectBtn -> {
                 val img = selectedImg ?: return
-                val ratio = maxSideLenSeekBar.progress.toFloat() / 100.toFloat()
+                val ratio = binding.maxSideLenSeekBar.progress.toFloat() / 100.toFloat()
                 val maxSize = max(img.width, img.height)
                 val maxSideLen = (ratio * maxSize).toInt()
                 detect(img, maxSideLen)
@@ -189,32 +146,32 @@ class GalleryActivity : AppCompatActivity(), View.OnClickListener, SeekBar.OnSee
             val img = selectedImg ?: return
             val maxSize = max(img.width, img.height)
             val maxSizeLen = (ratio * maxSize).toInt()
-            maxSideLenTv.text = "MaxSideLen:$maxSizeLen(${ratio * 100}%)"
+            binding.maxSideLenTv.text = "MaxSideLen:$maxSizeLen(${ratio * 100}%)"
         } else {
-            maxSideLenTv.text = "MaxSideLen:0(${ratio * 100}%)"
+            binding.maxSideLenTv.text = "MaxSideLen:0(${ratio * 100}%)"
         }
     }
 
     private fun updatePadding(progress: Int) {
-        paddingTv.text = "Padding:$progress"
+        binding.paddingTv.text = "Padding:$progress"
         App.ocrEngine.padding = progress
     }
 
     private fun updateBoxScoreThresh(progress: Int) {
         val thresh = progress.toFloat() / 100.toFloat()
-        boxScoreThreshTv.text = "${getString(R.string.box_score_thresh)}:$thresh"
+        binding.boxScoreThreshTv.text = "${getString(R.string.box_score_thresh)}:$thresh"
         App.ocrEngine.boxScoreThresh = thresh
     }
 
     private fun updateBoxThresh(progress: Int) {
         val thresh = progress.toFloat() / 100.toFloat()
-        boxThreshTv.text = "BoxThresh:$thresh"
+        binding.boxThreshTv.text = "BoxThresh:$thresh"
         App.ocrEngine.boxThresh = thresh
     }
 
     private fun updateUnClipRatio(progress: Int) {
         val scale = progress.toFloat() / 10.toFloat()
-        unClipRatioTv.text = "${getString(R.string.box_un_clip_ratio)}:$scale"
+        binding.unClipRatioTv.text = "${getString(R.string.box_un_clip_ratio)}:$scale"
         App.ocrEngine.unClipRatio = scale
     }
 
@@ -225,19 +182,19 @@ class GalleryActivity : AppCompatActivity(), View.OnClickListener, SeekBar.OnSee
             val imgUri = data.data ?: return
             val options =
                 RequestOptions().skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE)
-            Glide.with(this).load(imgUri).apply(options).into(imageView)
+            Glide.with(this).load(imgUri).apply(options).into(binding.imageView)
             selectedImg = decodeUri(imgUri)
-            updateMaxSideLen(maxSideLenSeekBar.progress)
+            updateMaxSideLen(binding.maxSideLenSeekBar.progress)
             clearLastResult()
         }
     }
 
     private fun showLoading() {
-        Glide.with(this).load(R.drawable.loading_anim).into(imageView)
+        Glide.with(this).load(R.drawable.loading_anim).into(binding.imageView)
     }
 
     private fun clearLastResult() {
-        timeTV.text = ""
+        binding.timeTV.text = ""
         ocrResult = null
     }
 
@@ -249,8 +206,8 @@ class GalleryActivity : AppCompatActivity(), View.OnClickListener, SeekBar.OnSee
         }.flowOn(Dispatchers.IO)
             .onStart { showLoading() }
             .onEach {
-                timeTV.text = "循环${loop}次，平均时间${it}ms"
-                Glide.with(this).clear(imageView)
+                binding.timeTV.text = "循环${loop}次，平均时间${it}ms"
+                Glide.with(this).clear(binding.imageView)
             }
             .launchIn(lifecycleScope)
     }
@@ -270,10 +227,10 @@ class GalleryActivity : AppCompatActivity(), View.OnClickListener, SeekBar.OnSee
             .onStart { showLoading() }
             .onEach {
                 ocrResult = it
-                timeTV.text = "识别时间:${it.detectTime.toInt()}ms"
+                binding.timeTV.text = "识别时间:${it.detectTime.toInt()}ms"
                 val options =
                     RequestOptions().skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE)
-                Glide.with(this).load(it.boxImg).apply(options).into(imageView)
+                Glide.with(this).load(it.boxImg).apply(options).into(binding.imageView)
                 Logger.i("$it")
             }.launchIn(lifecycleScope)
     }
