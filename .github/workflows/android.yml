@@ -52,7 +52,7 @@ jobs:
         run: |
           wget https://github.com/RapidAI/OnnxruntimeBuilder/releases/download/${{ env.ONNX_VERSION }}/${{ env.ONNX_PKG_NAME }}.7z -O ${{ env.ONNX_PKG_NAME }}.7z
           7z x ${{ env.ONNX_PKG_NAME }}.7z -aoa
-          mv onnx OcrLibrary/src/main
+          mv onnxruntime-shared OcrLibrary/src/main
 
       # Assemble Release apk
       - name: Build with Gradle
