@@ -93,6 +93,12 @@ onnxruntime框架[https://github.com/microsoft/onnxruntime](https://github.com/m
 * 高版本的opencv会要求 Minimum required by OpenCV API level is android-24，所以目前仍停留在3.4.15
 * 如果不在意MinSdk，可自行[下载新版opencv](https://github.com/nihui/opencv-mobile/releases)
 
+#### 2022-02-15 update 1.8.0
+
+* 增加相册识别和相机识别停止按钮
+* 添加 Java demo
+* 适配onnxruntime 1.14.1
+
 ## 编译说明
 
 1. AndroidStudio 2021.2.1或以上；
