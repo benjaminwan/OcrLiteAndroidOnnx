@@ -26,10 +26,9 @@ private:
     Ort::Env ortEnv = Ort::Env(ORT_LOGGING_LEVEL_ERROR, "CrnnNet");
     Ort::SessionOptions sessionOptions = Ort::SessionOptions();
     int numThread = 0;
-    //std::vector<const char *> inputNames;
-    //std::vector<const char *> outputNames;
-    const char *inputNames[1] = {"input"};
-    const char *outputNames[1] = {"out"};
+
+    std::vector<Ort::AllocatedStringPtr> inputNamesPtr;
+    std::vector<Ort::AllocatedStringPtr> outputNamesPtr;
 
     const float meanValues[3] = {127.5, 127.5, 127.5};
     const float normValues[3] = {1.0 / 127.5, 1.0 / 127.5, 1.0 / 127.5};
