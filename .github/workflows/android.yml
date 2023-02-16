@@ -167,7 +167,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           body_path: Release.txt
-          draft: true
+          draft: false
           files: |
             ${{ steps.apk-path.outputs.path }}
             ${{ steps.aar-path.outputs.path }}
