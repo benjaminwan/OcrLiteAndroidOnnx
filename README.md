@@ -14,8 +14,7 @@
     - [总体说明](#总体说明)
     - [更新说明](#更新说明)
     - [编译说明](#编译说明)
-        - [编译Release包](#编译Release包)
-        - [重新编译](#重新编译)
+    - [使用说明](#使用说明)
     - [项目结构](#项目结构)
     - [常见问题](#常见问题)
         - [输入参数说明](#输入参数说明)
@@ -101,25 +100,7 @@ onnxruntime框架[https://github.com/microsoft/onnxruntime](https://github.com/m
 
 ### [编译说明](./BUILD.md)
 
-### 使用说明
-
-0. 根目录 build.gradle 添加
-
-```groovy
-repositories {
-    google()
-    jcenter()
-    maven { url "https://jitpack.io" }
-}
-```
-
-1. 添加 dependencies
-
-```groovy
-dependencies {
-    implementation 'com.github.benjaminwan:OcrLiteAndroidOnnx:1.8.0'
-}
-```
+### [使用说明](./INSTRUCTIONS.md)
 
 ## 项目结构
 
