@@ -101,9 +101,9 @@ onnxruntime框架[https://github.com/microsoft/onnxruntime](https://github.com/m
 
 ## 编译说明
 
-1. AndroidStudio 2021.2.1或以上；
+1. AndroidStudio 2022.1.1或以上；
 2. NDK下载，在SDK Tools中下载，版本选最新版；
-3. cmake 3.4.1或以上，最好是3.18.1，在SDK Tools中下载；
+3. cmake 3.22.1，在SDK Tools中下载；
 4. 原始模型来自https://github.com/DayBreak-u/chineseocr_lite/tree/onnx/models。
 5. 模型目录结构为
 
@@ -125,22 +125,18 @@ OcrLiteAndroidNcnn/OcrLibrary/src/sdk
         └── staticlibs
 ```
 
-6. 下载onnxruntime-1.11.1-android.7z，[下载地址](https://gitee.com/benjaminwan/ocr-lite-android-onnx/releases/v1.0.0.20201022)
+6. onnxruntime-1.14.0-android-shared.7z，[下载地址](https://github.com/RapidAI/OnnxruntimeBuilder/releases/tag/1.14.0)
 
 * 解压后目录结构为
 
 ```
-OcrLiteAndroidOnnx/OcrLibrary/src/main/onnx
-├── ONNXConfig.cmake
+OcrLiteAndroidOnnx/OcrLibrary/src/main/onnxruntime-shared
+├── OnnxRuntimeWrapper.cmake
 ├── arm64-v8a
-│   └── libonnxruntime.so
 ├── armeabi-v7a
-│   └── libonnxruntime.so
 ├── include
 ├── x86
-│   └── libonnxruntime.so
 └── x86_64
-    └── libonnxruntime.so
 ```
 
 7. 编译好的apk大约3xMB
