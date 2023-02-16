@@ -1,20 +1,12 @@
 # 使用说明
 
-0. 根目录 build.gradle 添加
+1. 从Release下载OcrLibrary-版本-release.aar，放到项目的app/libs路径
 
-```groovy
-repositories {
-    google()
-    jcenter()
-    maven { url "https://jitpack.io" }
-}
-```
-
-1. 添加 dependencies
+1. 编辑app/build.gradle
 
 ```groovy
 dependencies {
-    implementation 'com.github.benjaminwan:OcrLiteAndroidOnnx:1.8.0'
+    implementation fileTree(dir: "libs", include: ["*.jar", "*.aar"])
 }
 ```
 
