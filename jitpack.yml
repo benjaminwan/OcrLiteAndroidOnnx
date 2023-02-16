@@ -1,5 +1,0 @@
-jdk:
-  - openjdk11
-
-install:
-  - ./gradlew build :OcrLibrary:publishToMavenLocal
